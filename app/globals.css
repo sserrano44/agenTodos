@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+  --font-mono: "SFMono-Regular", "Menlo", "Monaco", "Courier New", monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+}
+
+:root {
+  --background: oklch(0.985 0.006 95.9);
+  --foreground: oklch(0.216 0.014 264.2);
+  --card: oklch(0.995 0.002 95.9 / 0.92);
+  --card-foreground: oklch(0.216 0.014 264.2);
+  --primary: oklch(0.446 0.101 203.4);
+  --primary-foreground: oklch(0.985 0.004 196.2);
+  --secondary: oklch(0.938 0.015 221.6);
+  --secondary-foreground: oklch(0.31 0.035 238.6);
+  --muted: oklch(0.954 0.01 236.3);
+  --muted-foreground: oklch(0.47 0.029 246.6);
+  --border: oklch(0.9 0.01 245);
+  --ring: oklch(0.79 0.06 212.5);
+  --destructive: oklch(0.63 0.216 20.54);
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.09), transparent 30%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(244, 247, 250, 0.92)),
+    var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+pre,
+code {
+  font-feature-settings: "liga" 0;
+}
