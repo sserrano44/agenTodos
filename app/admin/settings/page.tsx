@@ -20,10 +20,7 @@ const restExample = `curl ${apiBase}/todos \\
 
 const mcpExample = `{
   "transport": "streamable_http",
-  "url": "${mcpUrl}",
-  "headers": {
-    "Authorization": "Bearer <AGENT_API_KEY>"
-  }
+  "url": "${mcpUrl}"
 }`;
 
 const claudeExample = `{
@@ -81,12 +78,27 @@ export default function AdminSettingsPage() {
         <CardHeader>
           <CardTitle>Usage examples</CardTitle>
           <CardDescription>
-            Generate an API key from the agents screen, then use it as a Bearer token.
+            REST uses agent API keys. Remote MCP clients can either complete the OAuth connector flow or send an API key manually if the client supports custom headers.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
           <CodeBlock title="REST create todo" value={restExample} />
           <CodeBlock title="Generic MCP client config" value={mcpExample} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Remote MCP auth</CardTitle>
+          <CardDescription>
+            Agent Todos exposes OAuth discovery plus an authorization code + PKCE flow for hosted MCP clients such as Claude connectors.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm text-muted-foreground">
+          <p><strong className="text-foreground">Resource URL:</strong> {mcpUrl}</p>
+          <p><strong className="text-foreground">Protected resource metadata:</strong> {appUrl}/.well-known/oauth-protected-resource</p>
+          <p><strong className="text-foreground">Authorization server metadata:</strong> {appUrl}/.well-known/oauth-authorization-server</p>
+          <p>Use OAuth when the MCP client shows a Connect flow. Use an agent API key only for clients that support manual Bearer headers.</p>
         </CardContent>
       </Card>
 
@@ -107,7 +119,7 @@ export default function AdminSettingsPage() {
         <CardHeader>
           <CardTitle>Scopes</CardTitle>
           <CardDescription>
-            API keys are least-privilege by default and can be revoked at any time.
+            API keys and OAuth tokens both use the same least-privilege scope model.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 text-sm text-muted-foreground">

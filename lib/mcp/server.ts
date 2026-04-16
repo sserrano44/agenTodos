@@ -29,7 +29,13 @@ function asText(value: unknown) {
   return JSON.stringify(value, null, 2);
 }
 
-export function buildMcpServer(agent: Database["public"]["Tables"]["agents"]["Row"]) {
+export function buildMcpServer(input: {
+  workspaceId: string;
+  actor: {
+    actorType: "admin" | "agent";
+    actorId: string;
+  };
+}) {
   const env = getServerEnv();
   const server = new McpServer(
     {
@@ -43,10 +49,10 @@ export function buildMcpServer(agent: Database["public"]["Tables"]["agents"]["Ro
     },
   );
 
-  const handlers = createMcpToolHandlers(createSupabaseTodoStore(agent.workspace_id), {
-    actorType: "agent",
-    actorId: agent.id,
-  });
+  const handlers = createMcpToolHandlers(
+    createSupabaseTodoStore(input.workspaceId),
+    input.actor,
+  );
 
   server.registerTool(
     "list_todos",

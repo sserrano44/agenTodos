@@ -1,6 +1,8 @@
+import type { Route } from "next";
 import { redirect } from "next/navigation";
 
 import { LoginForm } from "@/app/login/login-form";
+import { getSafeAppRedirect } from "@/lib/auth/redirects";
 import { getAdminSession } from "@/lib/auth/admin";
 import { getSearchParam } from "@/lib/query-parsers";
 
@@ -23,14 +25,15 @@ export default async function LoginPage({
   const session = await getAdminSession();
   const resolvedSearchParams = (await searchParams) ?? {};
   const initialError = resolveLoginError(getSearchParam(resolvedSearchParams, "error"));
+  const next = getSafeAppRedirect(getSearchParam(resolvedSearchParams, "next"), "/admin/todos");
 
   if (session) {
-    redirect("/admin/todos");
+    redirect(next as Route);
   }
 
   return (
     <main className="flex min-h-screen items-center justify-center px-6 py-10">
-      <LoginForm initialError={initialError} />
+      <LoginForm initialError={initialError} next={next} />
     </main>
   );
 }

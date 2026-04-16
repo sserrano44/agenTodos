@@ -9,7 +9,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export function LoginForm({ initialError = null }: { initialError?: string | null }) {
+export function LoginForm({
+  initialError = null,
+  next = "/admin/todos",
+}: {
+  initialError?: string | null;
+  next?: string;
+}) {
   const initialState: LoginActionState = {
     error: initialError,
   };
@@ -25,7 +31,8 @@ export function LoginForm({ initialError = null }: { initialError?: string | nul
       </CardHeader>
       <CardContent>
         <form action={action} className="flex flex-col gap-5">
-          <SocialLoginButtons />
+          <input type="hidden" name="next" value={next} />
+          <SocialLoginButtons next={next} />
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-border" />

@@ -169,6 +169,14 @@ export async function authenticateAgentRequest(
   }
 
   const rawKey = authorization.slice(7).trim();
+  return authenticateAgentToken(rawKey, requiredScopes, client);
+}
+
+export async function authenticateAgentToken(
+  rawKey: string,
+  requiredScopes: readonly string[] = [],
+  client: ServiceClient = createSupabaseServiceRoleClient(),
+) {
   const keyHash = hashApiKey(rawKey);
 
   const { data, error } = await client

@@ -1,7 +1,9 @@
 "use server";
 
+import type { Route } from "next";
 import { redirect } from "next/navigation";
 
+import { getSafeAppRedirect } from "@/lib/auth/redirects";
 import { ApiError } from "@/lib/http/api";
 import { signInAdmin, signOutAdmin } from "@/lib/data/agents";
 
@@ -15,6 +17,7 @@ export async function loginAction(
 ): Promise<LoginActionState> {
   const email = formData.get("email")?.toString().trim() ?? "";
   const password = formData.get("password")?.toString() ?? "";
+  const next = getSafeAppRedirect(formData.get("next")?.toString(), "/admin/todos");
 
   if (!email || !password) {
     return { error: "Email and password are required." };
@@ -30,7 +33,7 @@ export async function loginAction(
     return { error: "Unable to sign in right now." };
   }
 
-  redirect("/admin/todos");
+  redirect(next as Route);
 }
 
 export async function logoutAction() {

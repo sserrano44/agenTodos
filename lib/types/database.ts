@@ -235,6 +235,172 @@ export type Database = {
           },
         ];
       };
+      oauth_authorization_codes: {
+        Row: {
+          id: string;
+          code_hash: string;
+          user_id: string;
+          workspace_id: string;
+          client_id: string;
+          redirect_uri: string;
+          scope: string[];
+          resource: string;
+          code_challenge: string;
+          code_challenge_method: string;
+          expires_at: string;
+          used_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          code_hash: string;
+          user_id: string;
+          workspace_id: string;
+          client_id: string;
+          redirect_uri: string;
+          scope?: string[];
+          resource: string;
+          code_challenge: string;
+          code_challenge_method?: string;
+          expires_at: string;
+          used_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          code_hash?: string;
+          user_id?: string;
+          workspace_id?: string;
+          client_id?: string;
+          redirect_uri?: string;
+          scope?: string[];
+          resource?: string;
+          code_challenge?: string;
+          code_challenge_method?: string;
+          expires_at?: string;
+          used_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "oauth_authorization_codes_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      oauth_refresh_tokens: {
+        Row: {
+          id: string;
+          refresh_token_hash: string;
+          user_id: string;
+          workspace_id: string;
+          client_id: string;
+          scope: string[];
+          resource: string;
+          expires_at: string;
+          revoked_at: string | null;
+          created_at: string;
+          last_used_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          refresh_token_hash: string;
+          user_id: string;
+          workspace_id: string;
+          client_id: string;
+          scope?: string[];
+          resource: string;
+          expires_at: string;
+          revoked_at?: string | null;
+          created_at?: string;
+          last_used_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          refresh_token_hash?: string;
+          user_id?: string;
+          workspace_id?: string;
+          client_id?: string;
+          scope?: string[];
+          resource?: string;
+          expires_at?: string;
+          revoked_at?: string | null;
+          created_at?: string;
+          last_used_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "oauth_refresh_tokens_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      oauth_access_tokens: {
+        Row: {
+          id: string;
+          access_token_hash: string;
+          refresh_token_id: string | null;
+          user_id: string;
+          workspace_id: string;
+          client_id: string;
+          scope: string[];
+          resource: string;
+          expires_at: string;
+          revoked_at: string | null;
+          created_at: string;
+          last_used_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          access_token_hash: string;
+          refresh_token_id?: string | null;
+          user_id: string;
+          workspace_id: string;
+          client_id: string;
+          scope?: string[];
+          resource: string;
+          expires_at: string;
+          revoked_at?: string | null;
+          created_at?: string;
+          last_used_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          access_token_hash?: string;
+          refresh_token_id?: string | null;
+          user_id?: string;
+          workspace_id?: string;
+          client_id?: string;
+          scope?: string[];
+          resource?: string;
+          expires_at?: string;
+          revoked_at?: string | null;
+          created_at?: string;
+          last_used_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "oauth_access_tokens_refresh_token_id_fkey";
+            columns: ["refresh_token_id"];
+            isOneToOne: false;
+            referencedRelation: "oauth_refresh_tokens";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "oauth_access_tokens_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       todos: {
         Row: {
           id: string;

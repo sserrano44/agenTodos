@@ -7,7 +7,7 @@ Agent Todos is a production-oriented MVP for managing todos shared between admin
 - multi-user workspace-ready data model
 - admin-managed agents and scoped API keys
 - a secure REST API for agent ingestion and access
-- a remote MCP endpoint using Streamable HTTP
+- a remote MCP endpoint using Streamable HTTP with OAuth support for hosted connectors
 - a normalized todo model for `claude_cowork`, `openclaw`, `manual`, `api`, and `mcp`
 
 No private Claude Cowork or OpenClaw integrations are assumed. External systems are expected to push normalized payloads into Agent Todos over REST or MCP.
@@ -114,6 +114,9 @@ Core tables:
 - `todos`
 - `todo_events`
 - `api_rate_limit_buckets`
+- `oauth_authorization_codes`
+- `oauth_refresh_tokens`
+- `oauth_access_tokens`
 
 Key database characteristics:
 
@@ -224,7 +227,9 @@ Transport:
 - Streamable HTTP
 - stateless
 - JSON response mode
-- authenticated with `Authorization: Bearer <AGENT_API_KEY>`
+- authenticated with either:
+  - OAuth 2.1 style authorization code + PKCE for hosted MCP connectors
+  - `Authorization: Bearer <AGENT_API_KEY>` for clients that support custom headers
 
 The MCP server exposes:
 
@@ -241,14 +246,16 @@ Generic remote MCP config example:
 ```json
 {
   "transport": "streamable_http",
-  "url": "https://your-app.example.com/api/mcp",
-  "headers": {
-    "Authorization": "Bearer <AGENT_API_KEY>"
-  }
+  "url": "https://your-app.example.com/api/mcp"
 }
 ```
 
-Exact MCP client configuration syntax varies by client. The important pieces are the Streamable HTTP transport, the `/api/mcp` URL, and the Bearer token header.
+OAuth discovery endpoints:
+
+- `https://your-app.example.com/.well-known/oauth-protected-resource`
+- `https://your-app.example.com/.well-known/oauth-authorization-server`
+
+Hosted MCP clients such as Claude connectors should use the Connect flow and complete OAuth against those discovery endpoints. If a client supports manually configured headers instead of OAuth, it can still use an agent API key as `Authorization: Bearer <AGENT_API_KEY>`.
 
 ## Source mapping examples
 

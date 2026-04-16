@@ -1,6 +1,10 @@
 import { buildMcpServer, createMcpTransport } from "@/lib/mcp/server";
-import { authenticateAgentRequest } from "@/lib/data/agents";
-import { jsonError } from "@/lib/http/api";
+import { authenticateAgentToken } from "@/lib/data/agents";
+import {
+  authenticateOAuthAccessToken,
+  buildMcpOauthChallengeResponse,
+} from "@/lib/auth/oauth";
+import { ApiError, jsonError } from "@/lib/http/api";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,7 +24,78 @@ export async function OPTIONS() {
   return withCors(new Response(null, { status: 204 }));
 }
 
-export async function GET() {
+type McpAuthContext =
+  | {
+      workspaceId: string;
+      actor: {
+        actorType: "agent";
+        actorId: string;
+      };
+    }
+  | {
+      workspaceId: string;
+      actor: {
+        actorType: "admin";
+        actorId: string;
+      };
+    };
+
+async function authenticateMcpRequest(request: Request): Promise<McpAuthContext> {
+  const authorization = request.headers.get("authorization");
+  if (!authorization?.toLowerCase().startsWith("bearer ")) {
+    throw new ApiError({
+      code: "unauthorized",
+      message: "Authorization required.",
+      status: 401,
+    });
+  }
+
+  const token = authorization.slice(7).trim();
+
+  try {
+    const agentAuth = await authenticateAgentToken(token, ["mcp:use"]);
+    return {
+      workspaceId: agentAuth.workspaceId,
+      actor: {
+        actorType: "agent",
+        actorId: agentAuth.agent.id,
+      },
+    };
+  } catch (error) {
+    if (error instanceof ApiError && error.status !== 401) {
+      throw error;
+    }
+
+    const oauthAuth = await authenticateOAuthAccessToken(token, ["mcp:use"]);
+    if (!oauthAuth) {
+      throw new ApiError({
+        code: "unauthorized",
+        message: "Authorization required.",
+        status: 401,
+      });
+    }
+
+    return {
+      workspaceId: oauthAuth.workspaceId,
+      actor: {
+        actorType: "admin",
+        actorId: oauthAuth.userId,
+      },
+    };
+  }
+}
+
+export async function GET(request: Request) {
+  try {
+    await authenticateMcpRequest(request);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) {
+      return withCors(buildMcpOauthChallengeResponse(error.message));
+    }
+
+    return withCors(jsonError(error));
+  }
+
   return withCors(
     new Response(
       JSON.stringify({
@@ -39,8 +114,8 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const auth = await authenticateAgentRequest(request, ["mcp:use"]);
-    const server = buildMcpServer(auth.agent);
+    const auth = await authenticateMcpRequest(request);
+    const server = buildMcpServer(auth);
     const transport = createMcpTransport();
 
     await server.connect(transport);
@@ -52,6 +127,10 @@ export async function POST(request: Request) {
       await Promise.allSettled([transport.close(), server.close()]);
     }
   } catch (error) {
+    if (error instanceof ApiError && error.status === 401) {
+      return withCors(buildMcpOauthChallengeResponse(error.message));
+    }
+
     return withCors(jsonError(error));
   }
 }
