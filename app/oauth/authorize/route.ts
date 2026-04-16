@@ -48,7 +48,9 @@ function buildAuthorizeLoginRedirect(request: NextRequest) {
     "next",
     getSafeAppRedirect(`${request.nextUrl.pathname}${request.nextUrl.search}`, "/admin/todos"),
   );
-  return NextResponse.redirect(loginUrl);
+  return NextResponse.redirect(loginUrl, {
+    status: request.method === "POST" ? 303 : 307,
+  });
 }
 
 function buildClientRedirect(
@@ -61,7 +63,7 @@ function buildClientRedirect(
       url.searchParams.set(key, value);
     }
   }
-  return NextResponse.redirect(url);
+  return NextResponse.redirect(url, 303);
 }
 
 function renderConsentPage(input: {
