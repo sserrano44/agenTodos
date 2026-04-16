@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { createMcpToolHandlers } from "@/lib/mcp/handlers";
+import { createMcpToolHandlers, mcpTodoSchema } from "@/lib/mcp/handlers";
 import { MemoryTodoStore } from "@/tests/helpers/memory-todo-store";
 
 describe("MCP todo handlers", () => {
@@ -28,5 +28,29 @@ describe("MCP todo handlers", () => {
 
     expect(completed.todo.status).toBe("done");
     expect(completed.todo.completed_at).not.toBeNull();
+  });
+
+  it("returns the public MCP todo shape without internal workspace fields", async () => {
+    const store = new MemoryTodoStore();
+    const handlers = createMcpToolHandlers(store, {
+      actorType: "agent",
+      actorId: "agent-1",
+    });
+
+    const created = await handlers.createTodo({
+      title: "Schema-safe MCP task",
+      description: "Should not leak workspace internals.",
+      priority: "medium",
+      source: "mcp",
+      status: "todo",
+      external_id: "mcp-safe-1",
+      due_at: null,
+      scheduled_for: null,
+      tags: ["triage"],
+      metadata: { upstream: "claude" },
+    });
+
+    expect(mcpTodoSchema.parse(created.todo)).toEqual(created.todo);
+    expect(created.todo).not.toHaveProperty("workspace_id");
   });
 });
