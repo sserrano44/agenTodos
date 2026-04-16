@@ -25,7 +25,7 @@ export default async function LoginPage({
   const initialError = resolveLoginError(getSearchParam(resolvedSearchParams, "error"));
 
   if (session) {
-    redirect("/admin");
+    redirect("/admin/todos");
   }
 
   return (

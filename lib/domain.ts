@@ -9,11 +9,14 @@ import {
 } from "@/lib/constants";
 
 const nullableTrimmedString = z
-  .string()
-  .trim()
-  .min(1)
-  .optional()
-  .nullable()
+  .preprocess((value) => {
+    if (typeof value !== "string") {
+      return value ?? null;
+    }
+
+    const trimmed = value.trim();
+    return trimmed === "" ? null : trimmed;
+  }, z.string().min(1).optional().nullable())
   .transform((value) => value ?? null);
 
 const metadataSchema = z.record(z.string(), z.unknown()).default({});
@@ -88,4 +91,3 @@ export type UpsertTodoInput = z.infer<typeof upsertTodoSchema>;
 export type CreateAgentInput = z.infer<typeof createAgentSchema>;
 export type UpdateAgentInput = z.infer<typeof updateAgentSchema>;
 export type CreateAgentApiKeyInput = z.infer<typeof createAgentApiKeySchema>;
-

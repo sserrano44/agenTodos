@@ -30,7 +30,7 @@ export async function loginAction(
     return { error: "Unable to sign in right now." };
   }
 
-  redirect("/admin");
+  redirect("/admin/todos");
 }
 
 export async function logoutAction() {

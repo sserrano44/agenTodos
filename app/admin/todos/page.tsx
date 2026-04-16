@@ -38,7 +38,142 @@ export default async function AdminTodosPage({
   const errorMessage = getSearchParam(resolvedSearchParams, "error");
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[0.95fr_1.45fr]">
+    <div className="grid gap-6 xl:grid-cols-[1.45fr_0.95fr]">
+      <div className="flex flex-col gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Todo list</CardTitle>
+            <CardDescription>
+              Filter by state, source, priority, due date, and text search.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form className="grid max-w-3xl gap-3 md:grid-cols-6" method="GET">
+              <div className="md:col-span-2">
+                <Input name="search" defaultValue={filters.search ?? ""} placeholder="Search todos" />
+              </div>
+              <SelectField name="status" defaultValue={filters.status ?? ""}>
+                <option value="">All statuses</option>
+                {TODO_STATUSES.map((status) => (
+                  <option key={status} value={status}>
+                    {STATUS_LABELS[status]}
+                  </option>
+                ))}
+              </SelectField>
+              <SelectField name="source" defaultValue={filters.source ?? ""}>
+                <option value="">All sources</option>
+                {TODO_SOURCES.map((source) => (
+                  <option key={source} value={source}>
+                    {SOURCE_LABELS[source]}
+                  </option>
+                ))}
+              </SelectField>
+              <SelectField name="priority" defaultValue={filters.priority ?? ""}>
+                <option value="">All priorities</option>
+                {TODO_PRIORITIES.map((priority) => (
+                  <option key={priority} value={priority}>
+                    {PRIORITY_LABELS[priority]}
+                  </option>
+                ))}
+              </SelectField>
+              <SelectField name="sort" defaultValue={filters.sort}>
+                <option value="created_at_desc">Newest first</option>
+                <option value="created_at_asc">Oldest first</option>
+                <option value="due_at_asc">Due date ascending</option>
+                <option value="due_at_desc">Due date descending</option>
+              </SelectField>
+              <Input
+                name="due_after"
+                type="datetime-local"
+                defaultValue={toDateTimeLocalInput(filters.due_after)}
+              />
+              <Input
+                name="due_before"
+                type="datetime-local"
+                defaultValue={toDateTimeLocalInput(filters.due_before)}
+              />
+              <div className="flex gap-3 md:col-span-6">
+                <Button type="submit" variant="outline">
+                  Apply filters
+                </Button>
+                <Button asChild type="button" variant="ghost">
+                  <Link href="/admin/todos">Reset</Link>
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-0">
+            {todos.length === 0 ? (
+              <div className="px-6 py-12 text-center text-sm text-muted-foreground">
+                No todos matched these filters.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Todo</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Source</TableHead>
+                      <TableHead>Priority</TableHead>
+                      <TableHead>Due</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {todos.map((todo) => (
+                      <TableRow key={todo.id}>
+                        <TableCell>
+                          <div className="flex flex-col gap-1">
+                            <div className="font-medium">{todo.title}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {todo.description || "No description"}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge>{STATUS_LABELS[todo.status]}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{SOURCE_LABELS[todo.source]}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{PRIORITY_LABELS[todo.priority]}</Badge>
+                        </TableCell>
+                        <TableCell>{formatDateTime(todo.due_at)}</TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-2">
+                            <Button asChild variant="outline" size="sm">
+                              <Link href={`/admin/todos?edit=${todo.id}`}>Edit</Link>
+                            </Button>
+                            <form action={toggleTodoCompletionAction}>
+                              <input type="hidden" name="id" value={todo.id} />
+                              <input type="hidden" name="current_status" value={todo.status} />
+                              <Button type="submit" size="sm" variant="secondary">
+                                {todo.status === "done" ? "Reopen" : "Complete"}
+                              </Button>
+                            </form>
+                            <form action={deleteTodoAction}>
+                              <input type="hidden" name="id" value={todo.id} />
+                              <Button type="submit" size="sm" variant="destructive">
+                                Delete
+                              </Button>
+                            </form>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
       <Card className="h-fit">
         <CardHeader>
           <CardTitle>{editTodo ? "Edit todo" : "Create todo"}</CardTitle>
@@ -174,141 +309,6 @@ export default async function AdminTodosPage({
           </form>
         </CardContent>
       </Card>
-
-      <div className="flex flex-col gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Todo list</CardTitle>
-            <CardDescription>
-              Filter by state, source, priority, due date, and text search.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form className="grid gap-3 md:grid-cols-6" method="GET">
-              <div className="md:col-span-2">
-                <Input name="search" defaultValue={filters.search ?? ""} placeholder="Search todos" />
-              </div>
-              <SelectField name="status" defaultValue={filters.status ?? ""}>
-                <option value="">All statuses</option>
-                {TODO_STATUSES.map((status) => (
-                  <option key={status} value={status}>
-                    {STATUS_LABELS[status]}
-                  </option>
-                ))}
-              </SelectField>
-              <SelectField name="source" defaultValue={filters.source ?? ""}>
-                <option value="">All sources</option>
-                {TODO_SOURCES.map((source) => (
-                  <option key={source} value={source}>
-                    {SOURCE_LABELS[source]}
-                  </option>
-                ))}
-              </SelectField>
-              <SelectField name="priority" defaultValue={filters.priority ?? ""}>
-                <option value="">All priorities</option>
-                {TODO_PRIORITIES.map((priority) => (
-                  <option key={priority} value={priority}>
-                    {PRIORITY_LABELS[priority]}
-                  </option>
-                ))}
-              </SelectField>
-              <SelectField name="sort" defaultValue={filters.sort}>
-                <option value="created_at_desc">Newest first</option>
-                <option value="created_at_asc">Oldest first</option>
-                <option value="due_at_asc">Due date ascending</option>
-                <option value="due_at_desc">Due date descending</option>
-              </SelectField>
-              <Input
-                name="due_after"
-                type="datetime-local"
-                defaultValue={toDateTimeLocalInput(filters.due_after)}
-              />
-              <Input
-                name="due_before"
-                type="datetime-local"
-                defaultValue={toDateTimeLocalInput(filters.due_before)}
-              />
-              <div className="flex gap-3 md:col-span-6">
-                <Button type="submit" variant="outline">
-                  Apply filters
-                </Button>
-                <Button asChild type="button" variant="ghost">
-                  <Link href="/admin/todos">Reset</Link>
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-0">
-            {todos.length === 0 ? (
-              <div className="px-6 py-12 text-center text-sm text-muted-foreground">
-                No todos matched these filters.
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Todo</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Source</TableHead>
-                      <TableHead>Priority</TableHead>
-                      <TableHead>Due</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {todos.map((todo) => (
-                      <TableRow key={todo.id}>
-                        <TableCell>
-                          <div className="flex flex-col gap-1">
-                            <div className="font-medium">{todo.title}</div>
-                            <div className="text-xs text-muted-foreground">
-                              {todo.description || "No description"}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge>{STATUS_LABELS[todo.status]}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{SOURCE_LABELS[todo.source]}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{PRIORITY_LABELS[todo.priority]}</Badge>
-                        </TableCell>
-                        <TableCell>{formatDateTime(todo.due_at)}</TableCell>
-                        <TableCell>
-                          <div className="flex flex-wrap gap-2">
-                            <Button asChild variant="outline" size="sm">
-                              <Link href={`/admin/todos?edit=${todo.id}`}>Edit</Link>
-                            </Button>
-                            <form action={toggleTodoCompletionAction}>
-                              <input type="hidden" name="id" value={todo.id} />
-                              <input type="hidden" name="current_status" value={todo.status} />
-                              <Button type="submit" size="sm" variant="secondary">
-                                {todo.status === "done" ? "Reopen" : "Complete"}
-                              </Button>
-                            </form>
-                            <form action={deleteTodoAction}>
-                              <input type="hidden" name="id" value={todo.id} />
-                              <Button type="submit" size="sm" variant="destructive">
-                                Delete
-                              </Button>
-                            </form>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 }

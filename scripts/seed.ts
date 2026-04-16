@@ -211,11 +211,29 @@ async function seedTodos(input: {
 
   for (const todo of todos) {
     if (todo.external_id) {
-      const { error } = await client.from("todos").upsert(todo, {
-        onConflict: "workspace_id,source,external_id",
-      });
+      const existing = await client
+        .from("todos")
+        .select("id")
+        .eq("workspace_id", input.workspaceId)
+        .eq("source", todo.source ?? "manual")
+        .eq("external_id", todo.external_id)
+        .maybeSingle();
 
-      handleDataError(error);
+      handleDataError(existing.error);
+
+      if (existing.data?.id) {
+        const updated = await client
+          .from("todos")
+          .update(todo)
+          .eq("workspace_id", input.workspaceId)
+          .eq("id", existing.data.id);
+
+        handleDataError(updated.error);
+      } else {
+        const inserted = await client.from("todos").insert(todo);
+        handleDataError(inserted.error);
+      }
+
       continue;
     }
 

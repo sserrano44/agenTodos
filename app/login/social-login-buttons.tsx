@@ -25,7 +25,7 @@ function isSupportedProvider(value: string): value is SupportedProvider {
   return value in SOCIAL_PROVIDER_CONFIG;
 }
 
-export function SocialLoginButtons({ next = "/admin" }: { next?: string }) {
+export function SocialLoginButtons({ next = "/admin/todos" }: { next?: string }) {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const providers = useMemo(() => {
